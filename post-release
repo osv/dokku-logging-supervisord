@@ -16,7 +16,7 @@ fi
 
 copy_to_container "$PLUGIN_DIR/lib/procfile-to-supervisord" /usr/local/bin/procfile-to-supervisord
 if [ -f "$SCALE_FILE" ]; then
-  echo "Found SCALE file: $SCALE_FILE"
+  echo "       Found SCALE file: $SCALE_FILE"
   copy_to_container "$SCALE_FILE" /app/SCALE
 else
   # Check for SCALE file in IMAGE
@@ -38,6 +38,12 @@ else
   test $(docker wait $id) -eq 0
   docker commit $id $IMAGE > /dev/null
 fi
+
+# Make copy of /exec for supervisor.
+# Original builstep use `ln -nsf /start /exec` that make fork supervisor again and again
+id=$(docker run -i -a stdin $IMAGE /bin/bash -c "cp /exec /exec_svd")
+test $(docker wait $id) -eq 0
+docker commit $id $IMAGE > /dev/null
 
 # Replace /start with our custom runner:
 id=$(cat "$PLUGIN_DIR/lib/runner" | docker run -i -a stdin $IMAGE /bin/bash -c "cat > /start")
