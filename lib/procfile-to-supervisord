@@ -38,12 +38,12 @@ fi
 
 cat << EOF
 [program:${NAME}]
-command=/exec_svd '${COMMAND}'
+command=/exec ${COMMAND}
 process_name:${PROCESS_NAME}
 numprocs=${NUM_PROCS}
 autostart=true
 autorestart=true
-stopsignal=QUIT
+stopsignal=TERM
 redirect_stderr=true
 stdout_logfile=/var/log/app/%(program_name)s.%(process_num)02d.log
 EOF
@@ -51,9 +51,8 @@ EOF
 
 gen_supervisor_conf
 
-DONE=false
-until $DONE; do
-  read line || DONE=true
+while read line || [ -n "$line" ]
+do
   [[ -z "$line" ]] && continue
   RUN_PROC=false
   NAME=${line%%:*}
@@ -62,8 +61,12 @@ until $DONE; do
 
   if [ -f "$SCALEFILE" ]; then
     SCALE=$(egrep "^$NAME=" "$SCALEFILE")
-    if [ -n "$SCALE" ]; then
+    if [[ -n "$SCALE" ]]; then
       NUM_PROCS=${SCALE#*=}
+      if [ "$NUM_PROCS" -eq 0 ]; then
+        echo "=====> Not running $NAME as scale is zero" >&2
+        continue
+      fi
     fi
   fi
 
@@ -85,4 +88,4 @@ until $DONE; do
       gen_supervisor_proc_conf "$NAME" "$COMMAND" "$NUM_PROCS"
     fi
   fi
-done < $PROCFILE
+done < "$PROCFILE"
