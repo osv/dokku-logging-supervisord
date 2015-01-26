@@ -1,7 +1,10 @@
-# dokku-logging-supervisord
+# dokku-logging-supervisord-logrotate
 
-dokku-logging-supervisord is a plugin for [dokku][dokku] that injects
-[supervisord][super] to run applications and redirects stdout & stderr to app/process specific log files (rather than the Docker default per-container JSON files). 
+dokku-logging-supervisord-logrotate is the fork of
+[dokku-logging-supervisord](https://github.com/sehrope/dokku-logging-supervisord)
+plugin for [dokku][dokku] that injects
+[supervisord][super] to run applications and redirects stdout & stderr to app/process specific log files (rather than the Docker default per-container JSON files).
+Logs are rotated by logrotate. 
 
 ## Requirements
 
@@ -10,7 +13,7 @@ This plugin uses the `docker-args` hook to inject the data volume argument. As s
 ## Installation
 
 ```sh
-git clone https://github.com/sehrope/dokku-logging-supervisord.git /var/lib/dokku/plugins/logging-supervisord
+git clone https://github.com/osv/dokku-logging-supervisord-logrotate.git /var/lib/dokku/plugins/logging-supervisord-logrotate
 dokku plugins-install
 ```
 
@@ -20,7 +23,7 @@ Logs are rotated. You may customize logrotate file after deploy, check `/etc/log
 ## What it does
 
 Normally, dokku only runs the `web` process within Procfile. The
-dokku-logging-supervisord plugin will run all process types (web, worker, etc.) and will restart crashed applications.
+dokku-logging-supervisord-logrotate plugin will run all process types (web, worker, etc.) and will restart crashed applications.
 
 Additionally, it creates and binds a shared directory for each app from `/var/log/dokku/$APP` on the host machine to `/var/log/app` in the app's container. The supervisord config is setup to have each process in your Procfile send it's stdout and stderr to a separate file in that directory named `$PROCESS_NAME.$PROCESS_NUM.log`. Output for the  `supervisord` process itself (startup/shutdown notices, etc) will be logged to a file named `supervisor.log` in the same log directory.
 
